@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<componentPackage>
+	<component id="EncryptedModuleLoader" class="com.nitrolm.modules.spark.EncryptedModuleLoader"/>
+	<component id="EncryptedModuleManager" class="com.nitrolm.modules.spark.EncryptedModuleManager"/>
+	<component id="Login" class="com.nitrolm.comp.Login"/>
+</componentPackage>

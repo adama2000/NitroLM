@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="NitroEncryptedModulesDemo" basedir="." default="AIR">
+
+	<property name="OPTIMIZE" value="true" />
+	<property name="DEBUG" value="false" />
+
+	<condition property="basedir" value="." else="src">
+		<os family="windows" />
+	</condition>
+	<echo message="basedir=${basedir}" />
+
+	<condition property="FLEX_HOME" 
+		value="C:/Program Files (x86)/Adobe/Adobe Flash Builder 4.6/sdks/4.6.0" 
+		else="/Users/Shared/flex_sdk_4.6.0">
+		<os family="windows" />
+	</condition>
+	<echo message="FLEX_HOME=${FLEX_HOME}" />
+
+	<condition property="flex.mxmlc" 
+		value="${FLEX_HOME}/bin/mxmlc.exe" 
+		else="${FLEX_HOME}/bin/mxmlc">
+		<os family="windows" />
+	</condition>
+	<echo message="flex.mxmlc=${flex.mxmlc}" />
+
+	<condition property="flex.adt" 
+		value="${FLEX_HOME}/bin/adt.bat" 
+		else="${FLEX_HOME}/bin/adt">
+		<os family="windows" />
+	</condition>
+	<echo message="flex.adt=${flex.adt}" />
+
+	<property name="src.dir" value="src" />
+	<property name="lib.dir" value="libs" />
+	<property name="out.dir" value="bin-release" />
+	<property name="dbg.dir" value="bin-debug" />
+	<property name="jars.dir" value="jars" />
+	<property name="ext.dir" value="ext" />
+
+	<taskdef name="nitrolm-encrypt"
+			 classname="com.simplifiedlogic.nitrolm.ant.task.EncryptTask"
+			 classpath="${jars.dir}/nitrolm-encryptx-ant-1.6-SNAPSHOT-uber.jar"/>
+		
+	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
+
+	<target name="clean" description="Clean the project">
+		<delete dir="${out.dir}" failonerror="false" />
+	</target>
+
+	<target name="init" description="initialize the project" depends="clean">
+		<mkdir dir="${out.dir}" />
+		<copy todir="${out.dir}" includeemptydirs="false">
+			<fileset dir="${basedir}">
+				<exclude name="**/*.as" />
+				<exclude name="**/*.mxml" />
+				<exclude name="**/*.xml" />
+				<exclude name="**/*.css" />
+				<exclude name="**/*.properties" />
+				<exclude name="**/*.ser" />
+				<exclude name="**/*.vser" />
+				<exclude name="**/*.swf" />
+				<exclude name="**/*.swc" />
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy todir="${out.dir}" includeemptydirs="false">
+			<fileset dir="${src.dir}">
+				<include name="external/*.swf" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="compile.release" description="Compile swf modules and main swf" depends="init">
+		<!-- compile main SWF -->
+		<mxmlc 
+			file="${src.dir}/NitroEncryptedModulesDemo.mxml" 
+			output="${out.dir}/NitroEncryptedModulesDemo.swf" 
+			debug="${DEBUG}" optimize="${OPTIMIZE}" 
+			link-report="${out.dir}/report.xml" 
+			locale="en_US" 
+			configname="air">
+
+			<compiler.context-root>/NitroEncryptedModulesDemo</compiler.context-root>
+			<source-path path-element="${src.dir}" />
+			<library-path dir="${FLEX_HOME}/frameworks/libs" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<library-path dir="${FLEX_HOME}/frameworks/libs/air" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<library-path dir="${FLEX_HOME}/frameworks/locale" append="true">
+				<include name="{locale}" />
+			</library-path>
+			<library-path dir="${lib.dir}" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<external-library-path dir="${ext.dir}" append="true">
+				<include name="*.swc" />
+			</external-library-path>
+		</mxmlc>
+
+		<!-- compile modules -->
+		<mxmlc 
+			file="${src.dir}/CircleModule.mxml" 
+			output="${out.dir}/CircleModule.swf" 
+			debug="${DEBUG}" 
+			optimize="${OPTIMIZE}" 
+			load-externs="${out.dir}/report.xml" 
+			locale="en_US" 
+			configname="air">
+			
+			<compiler.context-root>/NitroEncryptedModulesDemo</compiler.context-root>
+			<source-path path-element="${src.dir}" />
+			<library-path dir="${FLEX_HOME}/frameworks/libs" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<library-path dir="${FLEX_HOME}/frameworks/libs/air" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<library-path dir="${FLEX_HOME}/frameworks/locale" append="true">
+				<include name="{locale}" />
+			</library-path>
+			<library-path dir="${lib.dir}" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<external-library-path dir="${src.dir}/external">
+				<include name="*.swc" />
+			</external-library-path>
+			<external-library-path dir="${ext.dir}" append="true">
+				<include name="*.swc" />
+			</external-library-path>
+		</mxmlc>
+
+		<mxmlc 
+			file="${src.dir}/TechSupportRequest.mxml" 
+			output="${out.dir}/TechSupportRequest.swf" 
+			debug="${DEBUG}" 
+			optimize="${OPTIMIZE}" 
+			load-externs="${out.dir}/report.xml" 
+			locale="en_US" 
+			configname="air">
+
+			<compiler.context-root>/NitroEncryptedModulesDemo</compiler.context-root>
+			<source-path path-element="${src.dir}" />
+			<library-path dir="${FLEX_HOME}/frameworks/libs" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<library-path dir="${FLEX_HOME}/frameworks/libs/air" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<library-path dir="${FLEX_HOME}/frameworks/locale" append="true">
+				<include name="{locale}" />
+			</library-path>
+			<library-path dir="${lib.dir}" append="true">
+				<include name="*.swc" />
+			</library-path>
+			<external-library-path dir="${ext.dir}" append="true">
+				<include name="*.swc" />
+			</external-library-path>
+		</mxmlc>
+	</target>
+
+	<target name="encrypt" description="Encrypt the various swf modules" depends="compile.release">
+		
+		<!-- Black-box encrypt (no license needed to decrypt at runtime) -->
+		<!--
+		<nitrolm-encrypt srcFile="${out.dir}/CircleModule.swf" swf="true"/>
+		<nitrolm-encrypt srcFile="${out.dir}/TechSupportRequest.swf" swf="true"/>
+		<nitrolm-encrypt srcFile="${out.dir}/external/NitroEncryptedRSL.swf" swf="true"/>
+		-->
+
+		<!-- encrypt using Library Keys (need a license in the app in order to decrypt at runtime) -->
+		<nitrolm-encrypt srcFile="${out.dir}/CircleModule.swf" keydir="${basedir}/keys" product="LKX_THrLWnFxAnmrKhPIjsBQ" swf="true"/>
+		<nitrolm-encrypt srcFile="${out.dir}/TechSupportRequest.swf" keydir="${basedir}/keys" product="LKX_AOfZZCWIht7ncbIv6FQm" swf="true"/>
+		<nitrolm-encrypt srcFile="${out.dir}/external/NitroEncryptedRSL.swf" keydir="${basedir}/keys" product="LKX_L7asznKWvtZ6sPSM0fYZ" swf="true"/>
+	</target>
+	
+	<target name="encryptdebug" description="Encrypt the modules in the bin-debug folder">
+		<!-- Black-box encrypt (no license needed to decrypt at runtime) -->
+		<!--
+		<nitrolm-encrypt srcFile="${dbg.dir}/CircleModule.swf" swf="true"/>
+		<nitrolm-encrypt srcFile="${dbg.dir}/TechSupportRequest.swf" swf="true"/>
+		<nitrolm-encrypt srcFile="${dbg.dir}/external/NitroEncryptedRSL.swf" swf="true"/>
+		-->
+		
+		<!-- encrypt using Library Keys (need a license in the app in order to decrypt at runtime) -->
+		<nitrolm-encrypt srcFile="${dbg.dir}/CircleModule.swf" keydir="${basedir}/keys" product="LKX_THrLWnFxAnmrKhPIjsBQ" swf="true"/>
+		<nitrolm-encrypt srcFile="${dbg.dir}/TechSupportRequest.swf" keydir="${basedir}/keys" product="LKX_AOfZZCWIht7ncbIv6FQm" swf="true"/>
+		<nitrolm-encrypt srcFile="${dbg.dir}/external/NitroEncryptedRSL.swf" keydir="${basedir}/keys" product="LKX_L7asznKWvtZ6sPSM0fYZ" swf="true"/>
+	</target>
+
+	<target name="AIR" description="Create the AIR package for our app" depends="encrypt">
+		<exec executable="${flex.adt}" failonerror="true">
+			<arg line="-package" />
+			<arg line="-storetype pkcs12" />
+			<arg line="-keystore ${out.dir}/src/NitroEncryptedModulesDemo.p12" />
+			<arg line="-storepass 5tup1d" />
+			<arg line="-target native ${out.dir}/NitroEncryptedModulesDemo ${src.dir}/NitroEncryptedModulesDemo-app.xml" />
+			<arg line="-extdir ext" />
+			<arg line="-C ${out.dir} NitroEncryptedModulesDemo.swf" />
+			<arg line="-C ${out.dir} CircleModule.swf" />
+			<arg line="-C ${out.dir} TechSupportRequest.swf" />
+			<arg line="-C ${out.dir} external" />
+			<arg line="-C ${out.dir}/src assets" />
+		</exec>
+	</target>
+</project>

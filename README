@@ -1,0 +1,8 @@
+Welcome to the Nitro-LM project for Adobe AIR.
+
+NitroEncryptedModulesDemo - Adobe AIR project demonstrating licensing and encryption using several different techniques
+
+nitrolm-air - .ANE project.  The AS3 code is licensed under MIT.  The native .DLL and .framework is closed source and
+Copyright 2011 (c) Simplified Logic, Inc.
+
+nitrolm-air-com - .SWC project.  Helper components for loading encrypted modules and Login screens

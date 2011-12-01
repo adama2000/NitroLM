@@ -1,0 +1,194 @@
+<?xml version="1.0" ?>
+<project default="package">
+	<property name="project-name" value="nitrolm-air"/>
+	<property name="framework-name" value="NitroLM"/>
+	<property name="dll-name" value="NitroLM.dll"/>
+	
+	<property name="OPTIMIZE" value="true"/>
+	<property name="DEBUG" value="true"/>
+	
+	<property name="src.dir" value="${basedir}/src"/>
+    <property name="out.dir" value="${basedir}/bin"/>
+	
+	<condition property="FLEX_HOME" 
+		value="C:/Program Files (x86)/Adobe/Adobe Flash Builder 4.6/sdks/4.6.0"
+		else="/Applications/Adobe Flash Builder 4.6/sdks/4.6.0">
+		<os family="windows" />
+	</condition>
+	<echo message="FLEX_HOME=${FLEX_HOME}"/>
+	
+	<condition property="FLEX3_HOME" 
+		value="C:/Program Files (x86)/Adobe/Adobe Flash Builder 4.6/sdks/3.6.0"
+		else="/Applications/Adobe Flash Builder 4.6/sdks/3.6.0">
+		<os family="windows" />
+	</condition>
+	<echo message="FLEX3_HOME=${FLEX3_HOME}"/>
+
+	<condition property="flex.acompc"
+		value="${FLEX_HOME}/bin/acompc.bat"
+		else="${FLEX_HOME}/bin/acompc">
+		<os family="windows" />
+	</condition>
+	<echo message="flex.acompc=${flex.acompc}"/>
+	<condition property="flex3.acompc"
+		value="${FLEX3_HOME}/bin/acompc.bat"
+		else="${FLEX3_HOME}/bin/acompc">
+		<os family="windows" />
+	</condition>
+	<echo message="flex3.acompc=${flex3.acompc}"/>
+	
+	<condition property="flex.asdoc"
+		value="${FLEX_HOME}/bin/asdoc.exe"
+		else="${FLEX_HOME}/bin/asdoc">
+		<os family="windows" />
+	</condition>
+	<echo message="flex.asdoc=${flex.asdoc}"/>
+		
+	<property name="adt" value="${FLEX_HOME}/lib/adt.jar"/>
+
+	<property name="keystore" value="thawte_codesigning.pfx" />
+	<!-- set storepass on CMD line using ant -Dstorepass=XXXXXXXXX -->
+	<!--<property name="storepass" value="XXXXXXXXXXX" />-->
+
+	<target name="clean" description="Clean the project">
+		<delete dir="${out.dir}" failonerror="false"/>
+	</target>
+			
+	<target name="init" description="initialize the project" depends="clean">
+		<mkdir dir="${out.dir}"/>
+		<mkdir dir="${out.dir}/mx"/>
+	</target>
+	
+	<target name="compile" description="Compile the SWC file" depends="init">
+		<echo message="Compile Initial ${project-name}.swc"/>
+		<exec executable="${flex.acompc}" failonerror="true">
+			<arg line="-namespace http://www.nitrolm.com/2011 ${src.dir}/manifest.xml"/>
+			<arg line="-include-namespaces http://www.nitrolm.com/2011"/>
+			<arg line="-output='${out.dir}/${project-name}.swc'"/>
+			<arg line="-swf-version=13"/>
+			<arg line="-debug='${DEBUG}'"/>
+			<arg line="-optimize='${OPTIMIZE}'"/>
+			<arg line="-source-path='${src.dir}'"/>
+			<arg line="-external-library-path+='${FLEX_HOME}/frameworks/libs/air'"/>
+			<arg line="-external-library-path+='${FLEX_HOME}/frameworks/libs'"/>
+			<arg line="-external-library-path+='${FLEX_HOME}/frameworks/locale'"/>
+		</exec>
+		
+		<echo message="Compile MX ${project-name}-mx.swc"/>
+		<exec executable="${flex3.acompc}" failonerror="true">
+			<arg line="-namespace http://www.nitrolm.com/2011 ${src.dir}/manifest.xml"/>
+			<arg line="-include-namespaces http://www.nitrolm.com/2011"/>
+			<arg line="-output='${out.dir}/mx/${project-name}-mx.swc'"/>
+			<arg line="-debug='${DEBUG}'"/>
+			<arg line="-optimize='${OPTIMIZE}'"/>
+			<arg line="-locale en_US"/>
+			<arg line="-source-path='${src.dir}'"/>
+			<arg line="-external-library-path+='${FLEX3_HOME}/frameworks/libs/air'"/>
+			<arg line="-external-library-path+='${FLEX3_HOME}/frameworks/libs'"/>
+			<arg line="-external-library-path+='${FLEX3_HOME}/frameworks/locale/{locale}'"/>
+		</exec>
+		
+	</target>
+	
+	<target name="asdoc" depends="compile">
+		<mkdir dir="${out.dir}/doc"/>
+		
+		<exec executable="${flex.asdoc}" failonerror="true">
+			<arg line="+configname=air"/>
+			<arg line="-output &quot;${out.dir}/doc&quot;"/>
+			<arg line="-exclude-dependencies"/>
+			<arg line="-main-title &quot;Nitro&lt;font color='#ff6666'&gt;LM&lt;/font&gt; Client API Documentation&quot;"/>
+			<arg line="-window-title &quot;NitroLM Client API Documentation&quot;"/>
+			<arg line="-footer &quot;Copyright 2008-2011, Simplified Logic, Inc.&quot;"/>
+			<arg line="-package com.nitrolm &quot;Contains Classes and Interfaces for communicating with NitroLM servers&quot;"/>
+			<arg line="-package com.nitrolm.data &quot;Data Marshalling Helper Classes&quot;"/>
+			<arg line="-package com.nitrolm.comp &quot;NitroLM GUI components&quot;"/>
+			<arg line="-source-path ${src.dir}"/>
+			<arg line="-source-path ${basedir}/../nitrolm-air-comp/src"/>
+			<arg line="-library-path &quot;${FLEX_HOME}/frameworks/libs/air&quot;"/>
+			<arg line="-library-path &quot;${FLEX_HOME}/frameworks/libs/mx&quot;"/>
+			<arg line="-library-path &quot;${FLEX_HOME}/frameworks/libs&quot;"/>
+			<arg line="-doc-classes com.nitrolm.LicenseClient com.nitrolm.LicenseClientEvent com.nitrolm.NLMConstants com.nitrolm.data.Map com.nitrolm.modules.spark.EncryptedModuleManager com.nitrolm.modules.spark.EncryptedModuleLoader com.nitrolm.comp.Login com.nitrolm.comp.skins.LoginSkin"/>
+		</exec>
+	</target>
+	
+		
+	<target name="package" depends="asdoc">
+		<delete dir="${basedir}/build-ane" />
+		<mkdir dir="${basedir}/build-ane" />
+		<copy todir="${basedir}/build-ane" failonerror="true">
+			<fileset file="${out.dir}/${project-name}.swc"/>
+			<fileset file="${basedir}/resources/native/windows/${dll-name}" />
+			<fileset dir="${basedir}/resources/native/osx"/>
+			<fileset file="${basedir}/resources/native/extension.xml"/>
+			<fileset file="${basedir}/resources/native/thawte_codesigning.pfx"/>
+		</copy>
+		<unzip src="${out.dir}/${project-name}.swc" dest="${basedir}/build-ane" />
+		<java jar="${adt}" fork="true" dir="${basedir}/build-ane" failonerror="true">
+			<arg value="-package"/>
+			<arg value="-storetype"/>
+			<arg value="pkcs12"/>
+			<arg value="-keystore"/>
+			<arg value="${keystore}"/>
+			<arg value="-storepass"/>
+			<arg value="${storepass}"/>
+			<arg value="-target"/>
+			<arg value="ane"/>
+			<arg value="${project-name}.ane"/>
+			<arg value="extension.xml"/>
+			<arg value="-swc"/>
+			<arg value="${project-name}.swc"/>
+			<arg value="-platform"/>
+			<arg value="Windows-x86"/>
+			<arg value="library.swf"/>
+			<arg value="${dll-name}"/>
+			<arg value="-platform"/>
+			<arg value="MacOS-x86"/>
+			<arg value="library.swf"/>
+			<arg value="${framework-name}.framework" />
+		</java>
+
+		<copy todir="${out.dir}">
+			<fileset file="${basedir}/build-ane/${project-name}.ane"/>
+		</copy>
+		<delete dir="${basedir}/build-ane"/>
+
+		<mkdir dir="${basedir}/build-ane" />
+		<copy todir="${basedir}/build-ane" failonerror="true">
+			<fileset file="${out.dir}/mx/${project-name}-mx.swc"/>
+			<fileset file="${basedir}/resources/native/windows/${dll-name}" />
+			<fileset dir="${basedir}/resources/native/osx"/>
+			<fileset file="${basedir}/resources/native/extension.xml"/>
+			<fileset file="${basedir}/resources/native/thawte_codesigning.pfx"/>
+		</copy>
+		<unzip src="${out.dir}/mx/${project-name}-mx.swc" dest="${basedir}/build-ane" />
+		<java jar="${adt}" fork="true" dir="${basedir}/build-ane" failonerror="true">
+			<arg value="-package"/>
+			<arg value="-storetype"/>
+			<arg value="pkcs12"/>
+			<arg value="-keystore"/>
+			<arg value="${keystore}"/>
+			<arg value="-storepass"/>
+			<arg value="${storepass}"/>
+			<arg value="-target"/>
+			<arg value="ane"/>
+			<arg value="${project-name}-mx.ane"/>
+			<arg value="extension.xml"/>
+			<arg value="-swc"/>
+			<arg value="${project-name}-mx.swc"/>
+			<arg value="-platform"/>
+			<arg value="Windows-x86"/>
+			<arg value="library.swf"/>
+			<arg value="${dll-name}"/>
+			<arg value="-platform"/>
+			<arg value="MacOS-x86"/>
+			<arg value="library.swf"/>
+			<arg value="${framework-name}.framework" />
+		</java>
+
+		<copy todir="${out.dir}">
+			<fileset file="${basedir}/build-ane/${project-name}-mx.ane"/>
+		</copy>
+		<delete dir="${basedir}/build-ane"/>
+	</target>
+</project>

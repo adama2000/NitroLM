@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="false" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="com.nitrolm.modules.mx.EncryptedModuleLoader"/>
+    <classEntry path="com.nitrolm.modules.mx.EncryptedModuleManager"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests>
+    <namespaceManifestEntry manifest="manifest-mx.xml" namespace="http://www.nitrolm.com/2011"/>
+  </namespaceManifests>
+</flexLibProperties>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Module xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" width="100%" height="100%">
+	<fx:Script>
+		<![CDATA[
+			import com.nitrolm.LicenseClient;
+			import com.nitrolm.LicenseClientEvent;
+			import com.nitrolm.NLMConstants;
+			
+			public var licenseClient:LicenseClient = new LicenseClient(false);
+			
+			private function sendRequest():void
+			{
+				licenseClient.addEventListener(LicenseClientEvent.LICENSE_RESPONSE, handleEmailSupportResponse);
+				licenseClient.emailSupport("4RjPInHGpv0fFJ1CcdyG", null, sender.text, NLMConstants.SUPPORT_TECH, "Subject: "+subject.text+"\n\n"+message.text + "\n\n" + "Willing to Pay: "+payForIt.selected);
+			}
+			
+			private function handleEmailSupportResponse(event:LicenseClientEvent):void
+			{
+				licenseClient.removeEventListener(LicenseClientEvent.LICENSE_RESPONSE, handleEmailSupportResponse);
+				trace("Send Request: "+NLMConstants.responseToString(event.response));
+			}
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" verticalAlign="middle"/>
+	</s:layout>
+	
+	<s:Form  width="100%" height="100%" defaultButton="{submit}">
+		<s:FormHeading label="Request Form" width="100%"/>
+		<s:FormItem label="Sender(email):" width="100%">
+			<s:TextInput id="sender" width="100%"/>
+		</s:FormItem>
+		<s:FormItem label="Subject:" width="100%">
+			<s:TextInput id="subject" width="100%"/>
+		</s:FormItem>
+		<s:FormItem label="Message:" width="100%" height="100%">
+			<s:TextArea id="message" width="100%" height="100%"/>
+		</s:FormItem>
+		<s:FormItem width="100%">
+			<s:CheckBox id="payForIt" label="I am willing to PAY for it."/>
+		</s:FormItem>
+	</s:Form>
+
+	<s:Button id="submit" label="Submit" click="sendRequest()"/>
+</s:Module>

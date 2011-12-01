@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="com.nitrolm.LicenseClient"/>
+    <classEntry path="com.nitrolm.LicenseClientEvent"/>
+    <classEntry path="com.nitrolm.NLMConstants"/>
+    <classEntry path="com.nitrolm.data.Map"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests>
+    <namespaceManifestEntry manifest="manifest.xml" namespace="http://www.nitrolm.com/2011"/>
+  </namespaceManifests>
+</flexLibProperties>

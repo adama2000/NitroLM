@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<componentPackage>
+	<component id="LicenseClient" class="com.nitrolm.LicenseClient"/>
+	<component id="NLMConstants" class="com.nitrolm.NLMConstants"/>
+</componentPackage>

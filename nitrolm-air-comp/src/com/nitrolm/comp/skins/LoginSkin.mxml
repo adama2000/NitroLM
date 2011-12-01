@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+* Copyright (c) 2011 Simplified Logic, Inc. http://nitrolm.com
+*
+* Permission is hereby granted, free of charge, to any person obtaining
+* a copy of this software and associated documentation files (the "Software"),
+* to deal in the Software without restriction, including
+* without limitation the rights to use, copy, modify, merge, publish,
+* distribute, sublicense, and/or sell copies of the Software, and to
+* permit persons to whom the Software is furnished to do so, subject to
+* the following conditions:
+*
+* The above copyright notice and this permission notice shall be
+* included in all copies or substantial portions of the Software.
+*	
+*  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+*  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+*  MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+*  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+*  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+*  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+*  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*
+-->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:mx="library://ns.adobe.com/flex/mx" stateChangeComplete="stateChangeCompleteHandler(event)">
+	<!-- host component -->
+	<fx:Metadata>
+		[HostComponent("com.nitrolm.comp.Login")]
+	</fx:Metadata>
+	
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import mx.events.FlexEvent;
+			
+			import spark.events.TextOperationEvent;
+			
+			protected function passwordChangeHandler(event:TextOperationEvent):void
+			{
+				if(currentState == "register" || currentState == "changepassword")
+				{
+					if(passwordTextInput != null && passwordTextInput.text.length > 0 && passwordConfirmTextInput != null && passwordConfirmTextInput.text == passwordTextInput.text)
+					{
+						passwordTextInput.setStyle("contentBackgroundColor", 0x009600);
+						passwordConfirmTextInput.setStyle("contentBackgroundColor", 0x009600);
+						passwordTextInput.setStyle("contentBackgroundAlpha", 0.5);
+						passwordConfirmTextInput.setStyle("contentBackgroundAlpha", 0.5);
+					}
+					else if(passwordTextInput != null && passwordConfirmTextInput != null)
+					{
+						passwordTextInput.setStyle("contentBackgroundColor", 0x960000);
+						passwordConfirmTextInput.setStyle("contentBackgroundColor", 0x960000);
+						passwordTextInput.setStyle("contentBackgroundAlpha", 0.5);
+						passwordConfirmTextInput.setStyle("contentBackgroundAlpha", 0.5);
+					}
+				}
+				else
+				{
+					if(passwordTextInput != null)
+					{
+						passwordTextInput.clearStyle("contentBackgroundColor");
+						passwordTextInput.clearStyle("contentBackgroundAlpha");
+					}
+
+					if(passwordConfirmTextInput != null)
+					{
+						passwordConfirmTextInput.clearStyle("contentBackgroundColor");
+						passwordConfirmTextInput.clearStyle("contentBackgroundAlpha");
+					}
+				}
+			}
+			
+			protected function stateChangeCompleteHandler(event:FlexEvent):void
+			{
+				passwordChangeHandler(null);
+				
+				if(currentState == "register" && !hostComponent.corpIdRequired)
+				{
+					corpIdLabel.visible = false;
+					corpIdLabel.includeInLayout = false;
+					
+					corpIdTextInput.visible = false;
+					corpIdTextInput.includeInLayout = false;
+				}
+				else
+				{
+					corpIdLabel.visible = true;
+					corpIdLabel.includeInLayout = true;
+					
+					corpIdTextInput.visible = true;
+					corpIdTextInput.includeInLayout = true;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<mx:State name="normal"/>
+		<mx:State name="disabled"/>
+		
+		<mx:State name="login"/>
+		<mx:State name="forgotpassword"/>
+		<mx:State name="changepassword"/>
+		<mx:State name="demo"/>
+		<mx:State name="register"/>
+	</s:states>
+	
+	<s:RectangularDropShadow left="0" right="0" top="0" bottom="2" distance="6" blRadius="6" brRadius="6" angle="90"/>
+
+	<!-- background -->
+	<s:Rect left="0" right="0" top="0" bottom="0" radiusX="6">
+		<s:fill>
+			<mx:LinearGradient rotation="90">
+				<mx:GradientEntry color="0xAAAAAA" alpha="1" ratio="0"/>
+				<mx:GradientEntry color="0xEEEEEE" alpha="1" ratio="0"/>
+			</mx:LinearGradient>
+		</s:fill>
+		<s:stroke>
+			<mx:SolidColorStroke color="0x333333" pixelHinting="true" weight="3"/>
+		</s:stroke>
+	</s:Rect>
+	
+	<s:VGroup paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10">
+		<s:BitmapImage source="@Embed('/assets/images/nitrolm_small.png')"/>
+		<s:HGroup>
+			<s:VGroup id="labelsVGroup" paddingTop="6" gap="16">
+				<s:Label width="100%" textAlign="right" text="Email:"/>
+				<s:Label id="oldPasswordLabel" width="100%" textAlign="right" text="Old Password:" includeIn="changepassword"/>
+				<s:Label id="passwordLabel" width="100%" textAlign="right" text="Password:" text.changepassword="New Password:" excludeFrom="forgotpassword"/>
+				<s:Label id="passwordConfirmLabel" width="100%" textAlign="right" text="Password Confirm:" includeIn="register,changepassword"/>
+				<s:Label id="firstNameLabel" width="100%" textAlign="right" text="First Name:" visible="{hostComponent.firstNameRequired}" includeInLayout="{hostComponent.firstNameRequired}" includeIn="register"/>
+				<s:Label id="lastNameLabel" width="100%" textAlign="right" text="Last Name:" visible="{hostComponent.lastNameRequired}" includeInLayout="{hostComponent.lastNameRequired}" includeIn="register"/>
+				<s:Label id="phoneLabel" width="100%" textAlign="right" text="Phone:" visible="{hostComponent.phoneRequired}" includeInLayout="{hostComponent.phoneRequired}" includeIn="register"/>
+				<s:Label id="address1Label" width="100%" textAlign="right" text="Address 1:" visible="{hostComponent.addressRequired}" includeInLayout="{hostComponent.addressRequired}" includeIn="register"/>
+				<s:Label id="address2Label" width="100%" textAlign="right" text="Address 2:" visible="{hostComponent.addressRequired}" includeInLayout="{hostComponent.addressRequired}" includeIn="register"/>
+				<s:Label id="cityLabel" width="100%" textAlign="right" text="City:" visible="{hostComponent.cityRequired}" includeInLayout="{hostComponent.cityRequired}" includeIn="register"/>
+				<s:Label id="stateLabel" width="100%" textAlign="right" text="State:" visible="{hostComponent.stateRequired}" includeInLayout="{hostComponent.stateRequired}" includeIn="register"/>
+				<s:Label id="zipLabel" width="100%" textAlign="right" text="Zip:" visible="{hostComponent.zipRequired}" includeInLayout="{hostComponent.zipRequired}" includeIn="register"/>
+				<s:Label id="countryLabel" width="100%" textAlign="right" text="Country:" visible="{hostComponent.countryRequired}" includeInLayout="{hostComponent.countryRequired}" includeIn="register"/>
+				<s:Label id="userCompanyLabel" width="100%" textAlign="right" text="Company:" visible="{hostComponent.userCompanyRequired}" includeInLayout="{hostComponent.userCompanyRequired}" includeIn="register"/>
+				<s:Label id="corpIdLabel" width="100%" textAlign="right" text="Corporate Id:" excludeFrom="forgotpassword,changepassword,demo"/>
+				<s:Label id="typeLabel" width="100%" textAlign="right" text="License Type:" excludeFrom="forgotpassword,changepassword,register"/>
+				<s:Group height="16" excludeFrom="changepassword,register"/>
+			</s:VGroup>
+			<s:VGroup id="inputsVGroup" width="200">
+				<s:TextInput id="emailTextInput" width="100%" maxChars="100"/>
+				<s:TextInput id="oldPasswordTextInput" width="100%" displayAsPassword="true" maxChars="20" includeIn="changepassword"/>
+				<s:TextInput id="passwordTextInput" width="100%" displayAsPassword="true" maxChars="20" excludeFrom="forgotpassword" change="passwordChangeHandler(event)"/>
+				<s:TextInput id="passwordConfirmTextInput" width="100%" displayAsPassword="true" maxChars="20" includeIn="register,changepassword" change="passwordChangeHandler(event)"/>
+				<s:TextInput id="firstNameTextInput" width="100%" maxChars="200" visible="{hostComponent.firstNameRequired}" includeInLayout="{hostComponent.firstNameRequired}" includeIn="register"/>
+				<s:TextInput id="lastNameTextInput" width="100%" maxChars="200" visible="{hostComponent.lastNameRequired}" includeInLayout="{hostComponent.lastNameRequired}" includeIn="register"/>
+				<s:TextInput id="phoneTextInput" width="100%" maxChars="25" visible="{hostComponent.phoneRequired}" includeInLayout="{hostComponent.phoneRequired}" includeIn="register"/>
+				<s:TextInput id="address1TextInput" width="100%" maxChars="200" visible="{hostComponent.addressRequired}" includeInLayout="{hostComponent.addressRequired}" includeIn="register"/>
+				<s:TextInput id="address2TextInput" width="100%" maxChars="200" visible="{hostComponent.addressRequired}" includeInLayout="{hostComponent.addressRequired}" includeIn="register"/>
+				<s:TextInput id="cityTextInput" width="100%" maxChars="200" visible="{hostComponent.cityRequired}" includeInLayout="{hostComponent.cityRequired}" includeIn="register"/>
+				<s:TextInput id="stateTextInput" width="100%" maxChars="200" visible="{hostComponent.stateRequired}" includeInLayout="{hostComponent.stateRequired}" includeIn="register"/>
+				<s:TextInput id="zipTextInput" width="100%" maxChars="200" visible="{hostComponent.zipRequired}" includeInLayout="{hostComponent.zipRequired}" includeIn="register"/>
+				<s:TextInput id="countryTextInput" width="100%" maxChars="200" visible="{hostComponent.countryRequired}" includeInLayout="{hostComponent.countryRequired}" includeIn="register"/>
+				<s:TextInput id="userCompanyTextInput" width="100%" maxChars="200" visible="{hostComponent.userCompanyRequired}" includeInLayout="{hostComponent.userCompanyRequired}" includeIn="register"/>
+				<s:TextInput id="corpIdTextInput" width="100%" maxChars="20" displayAsPassword="true" excludeFrom="forgotpassword,changepassword,demo"/>
+				<s:DropDownList id="licenseTypeDropDownList" requireSelection="true" excludeFrom="forgotpassword,changepassword,register" />
+				<s:CheckBox id="forgotPasswordCheckBox" label="I forgot my password" excludeFrom="changepassword,register"/>
+			</s:VGroup>
+		</s:HGroup>
+		
+		<s:Label id="statusLabel" width="100%" text="{hostComponent.statusText}" fontWeight="bold" textAlign="center" color="0x960000"/>
+				 
+		<s:HGroup width="100%" horizontalAlign="right">
+			<s:Button id="registerButton" label="Register" label.register="Cancel" excludeFrom="changepassword"/>
+			<s:Button id="changePasswordButton" label="Change Password" label.changepassword="Cancel" excludeFrom="register"/>
+			<s:Group width="100%"/>
+			<s:Button id="submitButton" label="Login" label.forgotpassword="Reset Password" label.changepassword="Change Password" label.register="Submit Registration"/>
+		</s:HGroup>
+	</s:VGroup>
+	
+	
+</s:Skin>

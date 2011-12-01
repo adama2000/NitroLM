@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<componentPackage>
+	<component id="EncryptedModuleLoader" class="com.nitrolm.modules.mx.EncryptedModuleLoader"/>
+	<component id="EncryptedModuleManager" class="com.nitrolm.modules.mx.EncryptedModuleManager"/>
+</componentPackage>

@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+	Copyright 2008-2011 Simplified Logic, Inc.  All Rights Reserved.
+
+	This example app is meant to demonstrate basic nitro-lm licensing and encryption technology.
+	For advanced topics, please review the Nitro-LM documentation or ask questions on our Google group.
+	
+	http://groups.google.com/group/nitro-lm	
+-->
+<s:WindowedApplication 
+	xmlns:nitrolm="http://www.nitrolm.com/2011"
+	xmlns:westberg="com.westberg.components.*"
+	width="800" height="600" 
+	creationComplete="initNitroLM(event)"
+	title="Encrypted Module Loader Demo" xmlns:s="library://ns.adobe.com/flex/spark" xmlns:st="library://ns.tink.ws/flex/spark" xmlns:fx="http://ns.adobe.com/mxml/2009" xmlns:mx="library://ns.adobe.com/flex/mx" >
+	
+	<fx:Script>
+		<![CDATA[
+			import com.nitrolm.LicenseClient;
+			import com.nitrolm.LicenseClientEvent;
+			import com.nitrolm.NLMConstants;
+			import com.nitrolm.data.Map;
+			import com.nitrolm.modules.EncryptedModuleManager;
+			
+			import mx.core.IVisualElement;
+			import mx.events.ModuleEvent;
+			import mx.modules.IModuleInfo;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.HTTPService;
+			
+			//shared module code
+			private var re:ResultEvent;
+			private var hs:HTTPService;
+			
+			//the communication key for this product. embedded to secure all communication
+			//between this app and the Nitro-LM servers
+			[Embed(source="/4RjPInHGpv0fFJ1CcdyG.ser", mimeType="application/octet-stream")]
+			private var embeddedPublicKey:Class;
+
+			//the internal product code.  This is set manually or generated when you create
+			//a new software product in the Admin application.
+			private const product_name:String = "4RjPInHGpv0fFJ1CcdyG";
+			
+			//minimum version checking in Nitro-LM is optional, but recommended
+			//set this value to "" or null to disable minimum version checking.
+			//minimum versions allowed to run can be set in the admin tool on the
+			//My Software->software product screen.
+			private const product_version:String = "1";
+			
+			[Bindable]
+			public var licenseClient:LicenseClient = new LicenseClient();
+			
+			[Bindable]
+			private var licenseInfo:String = null;
+
+			private function initNitroLM(event:Event):void
+			{
+				//add the embedded Product Key so they're accessible to NitroLM
+				//and we can communicate securely with the server
+				licenseClient.putPublicKey(product_name, new embeddedPublicKey());
+				
+				//setup our global IO error handler
+				//in a production app, you may want to do more advanced error handling than this
+				//perhaps add and remove this event listener for each call to the LM servers.
+//				licenseClient.addEventListener(LicenseClientEvent.IO_ERROR, handleIOError);
+				
+				//check to see if we already have a license checked out
+				var result:int = licenseClient.validate(product_name, product_version);
+				
+				if(result == NLMConstants.RESPONSE_OK)
+				{
+					var licenseValues:Map = new Map();
+					
+					//manually load up our RSL (externally linked .swc)
+					var rslFile:File = File.applicationDirectory.resolvePath("external/NitroEncryptedRSL.swf");
+					var rslStream:FileStream = new FileStream();
+					rslStream.addEventListener(Event.COMPLETE, 
+						function rslReadComplete(e:Event):void {
+							//we have our encrypted RSL bytes
+							var e_bytes:ByteArray = new ByteArray();
+							rslStream.readBytes(e_bytes);
+							
+							var ret:int = licenseClient.decryptAndLoadRSL(e_bytes, ApplicationDomain.currentDomain, loadRSLComplete);
+							trace("decryptAndLoadRSL="+NLMConstants.responseToString(ret));
+						});
+					rslStream.openAsync(rslFile, FileMode.READ);
+					
+					//remove the login screen and show the main interface					
+					currentState = "";
+					
+					//dump our data from the license so we can view it.
+					retrieveLicenseInfo();
+				}
+				else
+				{
+					//retrieve a new license.  switch to the login state
+					this.currentState = "login";
+				}
+				
+				if(!this.hasEventListener(Event.CLOSING))
+					this.addEventListener(Event.CLOSING, releaseLicense);
+			}
+			
+			private function loadRSLComplete(e:Event):void {
+				//RSL code is done being loaded.  we can load up the modules now since circle depended on the RSL code
+				//set the library url for CircleModule since we can now decrypt it
+				//using EncryptedModuleLoader
+				//because we have a license containing library keys.
+				circleModule.url = "CircleModule.swf";
+
+				var techSupportModule:IModuleInfo = EncryptedModuleManager.getModule("TechSupportRequest.swf");
+				techSupportModule.addEventListener(ModuleEvent.ERROR, function(e:ModuleEvent):void {
+					trace("ModuleEvent.ERROR: "+e.errorText);
+				});
+				techSupportModule.addEventListener(ModuleEvent.READY, function(e:ModuleEvent):void {
+					vgrp.removeAllElements();
+					vgrp.addElement(e.module.factory.create() as IVisualElement);
+				});
+				techSupportModule.load();
+			}
+			
+			private function retrieveLicenseInfo():void
+			{
+				var licenseValues:Map = new Map();
+				var ret:int = licenseClient.getLicenseInfo(product_name, licenseValues);
+				if(ret == NLMConstants.RESPONSE_OK)
+				{
+					licenseInfo = "";
+					licenseInfo += "Main License Values Map\n";
+					licenseInfo += licenseValues.toString();
+					
+					var customValues:Map = new Map();
+					ret = licenseClient.getCustomValues(product_name, product_version, customValues);
+					if(ret == NLMConstants.RESPONSE_OK)
+					{
+						licenseInfo += "\n\nCustom Values Map\n";
+						licenseInfo += customValues.toString();
+					}
+					
+					var externs:Array = licenseClient.getExternalValues(product_name);
+					if(externs != null && externs.length > 0)
+					{
+						licenseInfo += "\n\nExternal Values Map\n";
+						for each(var extern:Object in externs)
+						{
+							licenseInfo += extern.toString();
+							licenseInfo += "\n";
+						}
+					}
+					
+				}
+				else
+				{
+					trace("Error getting license info: "+NLMConstants.responseToString(ret));
+				}
+			}
+			
+//			private function doLogin():void
+//			{
+//				if(currentState == "forgotten_password")
+//				{
+//					//send a reset password request
+//					//for the source parameter, you should use "LIC-<your top-level corp id>"
+//					//if you're using resellers, it could also be "RES-<reseller corp id>"
+//					licenseClient.addEventListener(LicenseClientEvent.LICENSE_RESPONSE, handleLoginResponse);
+//					licenseClient.resetPassword(email.text, "LIC-SLI");
+//				}
+//				else
+//				{
+//					cursorManager.setBusyCursor();
+//					licenseClient.addEventListener(LicenseClientEvent.LICENSE_RESPONSE, handleLoginResponse);
+//					if(typeCombo.selectedItem == "Demo")
+//					{
+//						//get a 5-day demo license (demo licenses behave like checkout licenses)
+//						//corporate id isn't necessary for demo licenses (their corporation hasn't purchased anything yet, so they have
+//						//no Customer entry(corp_id) in NitroLM
+//						licenseClient.getLicense(email.text, password.text, null, product_name, product_version, NLMConstants.LOCK_DEMO, 5, "", false);
+//					}
+//					else if(typeCombo.selectedItem == "Floating")
+//					{
+//						//get a floating license
+//						licenseClient.getLicense(email.text, password.text, corpid.text, product_name, product_version, NLMConstants.LOCK_FLOATING, 0, "", false);
+//					}
+//					else
+//					{
+//						//get a checked out license for 1 day
+//						licenseClient.getLicense(email.text, password.text, corpid.text, product_name, product_version, NLMConstants.LOCK_FIXED, 1, "", false);
+//					}
+//					
+//					//clear out the password so it doesn't stick around in memory
+//					password.text = "";
+//				}
+//			}
+			
+//			private function handleLoginResponse(event:LicenseClientEvent):void
+//			{
+//				cursorManager.removeBusyCursor();
+//				if(event.req_type == NLMConstants.REQUEST_RESET_PASSWORD)
+//				{
+//					//we were doing a password reset.  show what the result of that was
+//					trace("Password Reset: "+NLMConstants.responseToString(event.response));
+//
+//					//go back to the login or login_demo state					
+//					forgottenPasswordCb.selected = false;
+//					changeForgottenPassword();
+//				}
+//				else
+//				{
+//					if(event.response == NLMConstants.RESPONSE_OK)
+//					{
+//						//save off the email and corpid for use next time
+//						//since we had a successful authentication.
+//						//just an optional little time-saver for our users
+//						var so:SharedObject = SharedObject.getLocal("NitroEncryptedModulesDemo", "/");
+//						so.data.email = email.text;
+//						so.data.corpid = corpid.text;
+//						so.flush();
+//	
+//						//re-validate our license
+//						initNitroLM(new Event(Event.COMPLETE));
+//					}
+//					else
+//					{
+//						login_status.text = NLMConstants.responseToString(event.response);
+//					}
+//				}
+//			}
+			
+			/**
+			 * Most createUser parameters are optional.  You can collect as much or as little info
+			 * from your users as you want.  If you're not using a given parameter, simply pass "-"
+			 * to createUser()
+			 */
+			private function doNewUser():void
+			{
+				trace("calling createUser");
+//				var response:int = licenseClient.createUser(email.text, password.text, firstname.text, lastname.text, phone.text, address1.text, address2.text, city.text, state.text, zip.text, country.text, company.text, marketSource.text, corpid.text, "1", "NitroEncryptedModulesDemo", NLMConstants.CONFIRM_MAIL_LINKONLY, null);
+				
+//				handleCreateUserResponse(response);
+			}
+			
+			private function handleCreateUserResponse(response:int):void
+			{
+				trace("Create User Response: "+NLMConstants.responseToString(response));
+			}
+			
+			private function releaseLicense(event:Event):void
+			{
+				this.status = "Releasing License.........";
+				
+				//check to see if we already have a license
+				var response:int = licenseClient.validate(product_name, product_version);
+				if(response == NLMConstants.RESPONSE_OK)
+				{
+					//cancel this event so that we don't close until
+					//the license is released
+					event.preventDefault();
+
+					var licenseValues:Map = new Map();
+					licenseClient.getLicenseInfo(product_name, licenseValues);
+					
+					//check to see if this is a floating license
+					if(licenseValues.get("locktype") == NLMConstants.LOCK_FLOATING)
+					{
+						//go ahead and release this license
+						licenseClient.addEventListener(LicenseClientEvent.LICENSE_RESPONSE, handleReleaseLicense);
+						licenseClient.releaseLicense(product_name, product_version);
+					}
+					else
+					{
+						//go ahead and shut down.  We have a checked out
+						this.removeEventListener(Event.CLOSING, releaseLicense);
+						licenseClient.dispose();
+						this.close();
+					}
+				}
+				else {
+					licenseClient.dispose();
+				}
+			}
+			
+			private function handleReleaseLicense(event:LicenseClientEvent):void
+			{
+				//we don't need to check the response because we're closing no matter what
+				licenseClient.removeEventListener(LicenseClientEvent.LICENSE_RESPONSE, handleReleaseLicense);
+				trace("release_license="+NLMConstants.responseToString(event.response));
+				this.removeEventListener(Event.CLOSING, releaseLicense);
+				licenseClient.dispose();
+				this.close();
+			}
+
+//			private function changeForgottenPassword():void
+//			{
+//				if (forgottenPasswordCb.selected)
+//				{
+//					currentState = "forgotten_password";
+//				}
+//				else
+//				{
+//					currentState = typeCombo.selectedItem=='Demo' ? 'login_demo' : 'login';
+//				}
+//			}
+			
+			private function forceLicenseRelease():void
+			{
+				licenseClient.addEventListener(LicenseClientEvent.LICENSE_RESPONSE, handleForceReleaseLicense);
+				licenseClient.releaseLicense(product_name, product_version);
+			}
+			
+			private function handleForceReleaseLicense(event:LicenseClientEvent):void
+			{
+				licenseClient.removeEventListener(LicenseClientEvent.LICENSE_RESPONSE, handleForceReleaseLicense);
+				trace("Release License: "+NLMConstants.responseToString(event.response));
+				currentState = "login";
+			}
+			
+			private function changePassword():void
+			{
+//				var response:int = licenseClient.changePassword(email.text, oldPassword.text, password.text, confirmPassword.text);
+//				changePasswordHandler(response);
+			}
+			
+			private function changePasswordHandler(response:int):void
+			{
+				trace("Change Password: "+NLMConstants.responseToString(response));
+			}
+			
+			protected function licenseResponseHandler(event:LicenseClientEvent):void
+			{
+				//re-validate
+				initNitroLM(null);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:layout>
+		<s:VerticalLayout horizontalAlign="center" verticalAlign="middle"/>
+	</s:layout>
+	
+	<s:states>
+		<s:State name="default"/>
+		<s:State name="login"/>
+	</s:states>
+	
+	<nitrolm:Login id="loginBox" productCode="{product_name}" productVersion="{product_version}" checkoutDays="1" demoDays="1" licenseResponse="licenseResponseHandler(event)" includeIn="login"/>
+	
+	<s:VGroup width="100%" height="100%" gap="0" paddingTop="10" paddingLeft="10" paddingBottom="10" includeIn="default">
+		<s:TabBar dataProvider="{viewStack}"/>
+		<mx:ViewStack id="viewStack" width="100%" height="100%" creationPolicy="all">
+			<s:NavigatorContent label="License Info" width="100%" height="100%">
+				<s:Scroller width="100%" height="100%">
+					<s:Group>
+						<s:RichText text="{licenseInfo}" paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+					</s:Group>
+				</s:Scroller>
+			</s:NavigatorContent>
+			
+			<s:NavigatorContent label="Circle" width="100%" height="100%">
+				<!-- CircleModule.swf is an encrypted swf module.  It will be automatically loaded by EncryptedModuleLoader -->
+				<!--<mx:ModuleLoader id="circleModule" label="Circle"/>-->
+				<nitrolm:EncryptedModuleLoader id="circleModule" label="Circle" width="100%" height="100%"/>
+			</s:NavigatorContent>
+
+			<!-- TechSupportRequest.swf is an encrypted swf module.  It will be automatically loaded by EncryptedModuleLoader -->
+			<!--<nitrolm:EncryptedModuleLoader id="techSupportModule" label="Tech Support"/>-->
+			<s:NavigatorContent label="Tech Support" width="100%" height="100%">
+				<s:VGroup id="vgrp" width="100%" height="100%">
+				</s:VGroup>
+			</s:NavigatorContent>
+		</mx:ViewStack>
+		<s:Group height="10"/>
+		<s:Group width="100%">
+			<s:Button id="forceRelease" label="Force License Release and Logoff" click="forceLicenseRelease()" horizontalCenter="0"/>
+		</s:Group>
+	</s:VGroup>
+</s:WindowedApplication>
