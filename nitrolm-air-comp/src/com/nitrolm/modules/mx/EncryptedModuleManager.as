@@ -270,7 +270,7 @@ class EncryptedModuleInfo extends EventDispatcher
 	/**
 	 *  @private
 	 */
-	private var loader:Loader;
+	public var loader:Loader;
 	
 	/**
 	 *  @private
