@@ -39,7 +39,7 @@
 
 	<taskdef name="nitrolm-encrypt"
 			 classname="com.simplifiedlogic.nitrolm.ant.task.EncryptTask"
-			 classpath="${jars.dir}/nitrolm-encryptx-ant-1.6-SNAPSHOT-uber.jar"/>
+			 classpath="${jars.dir}/nitrolm-encryptx-ant-1.6.1-uber.jar"/>
 		
 	<taskdef resource="flexTasks.tasks" classpath="${FLEX_HOME}/ant/lib/flexTasks.jar" />
 
@@ -201,7 +201,6 @@
 			<arg line="-C ${out.dir} CircleModule.swf" />
 			<arg line="-C ${out.dir} TechSupportRequest.swf" />
 			<arg line="-C ${out.dir} external" />
-			<arg line="-C ${out.dir}/src assets" />
 		</exec>
 	</target>
 </project>
