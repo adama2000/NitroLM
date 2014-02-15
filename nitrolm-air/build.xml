@@ -46,7 +46,7 @@
 		
 	<property name="adt" value="${FLEX_HOME}/lib/adt.jar"/>
 
-	<property name="keystore" value="thawte_codesigning.pfx" />
+	<property name="keystore" value="sli_codesign_thawte_20141018.pfx" />
 	<!-- set storepass on CMD line using ant -Dstorepass=XXXXXXXXX -->
 	<!--<property name="storepass" value="XXXXXXXXXXX" />-->
 
@@ -121,7 +121,7 @@
 			<fileset file="${basedir}/resources/native/windows/${dll-name}" />
 			<fileset dir="${basedir}/resources/native/osx"/>
 			<fileset file="${basedir}/resources/native/extension.xml"/>
-			<fileset file="${basedir}/resources/native/thawte_codesigning.pfx"/>
+			<fileset file="${basedir}/resources/native/sli_codesign_thawte_20141018.pfx"/>
 		</copy>
 		<unzip src="${out.dir}/${project-name}.swc" dest="${basedir}/build-ane" />
 		<java jar="${adt}" fork="true" dir="${basedir}/build-ane" failonerror="true">
@@ -159,7 +159,7 @@
 			<fileset file="${basedir}/resources/native/windows/${dll-name}" />
 			<fileset dir="${basedir}/resources/native/osx"/>
 			<fileset file="${basedir}/resources/native/extension.xml"/>
-			<fileset file="${basedir}/resources/native/thawte_codesigning.pfx"/>
+			<fileset file="${basedir}/resources/native/sli_codesign_thawte_20141018.pfx"/>
 		</copy>
 		<unzip src="${out.dir}/mx/${project-name}-mx.swc" dest="${basedir}/build-ane" />
 		<java jar="${adt}" fork="true" dir="${basedir}/build-ane" failonerror="true">

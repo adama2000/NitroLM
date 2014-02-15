@@ -7,4 +7,5 @@
 /nitrolm-air-comp/.settings
 /nitrolm-air-comp/bin
 /nitrolm-air/.settings
-/nitrolm-air/resources/native/thawte_codesigning.pfx
+*.pfx
+.DS_Store
